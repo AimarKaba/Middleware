@@ -1,0 +1,70 @@
+KODUTÖÖ MIDDLEWARE KOHTA
+
+1. MIS ON MIDDLEWARE?
+Middleware on tarkvara, mis on kokku pandud rakenduse jaoks, et tegeleda requestide ja responsidega. Suudab valida,
+kas edastada requesti mõnele teisele komponendile või siis teostab käsu enne ja/või pärast järgmist komponenti.
+
+2. MISSUGUSEID EXTENSION MEETODEID KASUTAB MIDDLEWARE?
+Middleware kasutab "TUN", "MAP" ja "USE" extension meetodeid.
+
+3. ISELOOMUSTA MIDDLEWARE KÄSKUDE LOOGIKAT.
+Middleware koosneb delegaatide jadast, mida kutsutaks välja üksteise järel. Iga delegaat saab teha toiminguid
+enne ja pärast järgmist delegaati.
+
+4. KUIDAS KUTUSTAKSE DELEGAATI, KUI SEE EI EDASTA PÄRINGUD JÄRGMISELE DELEGAADILE?
+Kui ei edastata päringut järgmisele delegaadile, kutsutakse seda "short circuiting the request pipeline"
+
+5. KIRJELDA TÄIELIKU PÄRINGUPROTSESSI JÄRJESTUST APS.NET CORE MVC NÄITE PUHUL.
+Kõigepealt tehakse päring - liigub "UseExeptionHandlerisse", mis püüab kõik erandid kinni, ka need, mis esinevad hiljem.
+
+Järgmisena liigub HSTS-i, mis on turvalisuse parandamiseks mõeldud, see võtab kontrollib kõiki enne ja pärast päringuid ja vastuseid muutvaid komponente.
+
+Kolmandaks liigub HTTPS-i ümbersuunamise middlewaresse "UseHttpsRedirection", mis lihtsalt suunab päringud HTTPS-i.
+
+Neljandaks on "static files" middleware, mis on selle jaoks, et requestid ei peaks liikuma ülejäänutest komponentidest, kui seda pole vaja.
+
+Viiendaks on "Routing", mille ülesanne on suunata ja edastada sisse tulevad HTTP requestid õigetesse endpointidesse.
+
+Kuuendaks on "CORS", mis on mingi bugi parandamiseks. Selle ülesanne on seadistada ressursside jagamine.
+
+Seitsmendaks on "Authentication", on autentimise middleware, mis proovib kasutajat autentida, enne kui talle antakse ligipääs turvalistele ressurssidele.
+
+Kaheksandaks on "Authorization", on autoriseerimis middleware, mis annab kasutajale juurdepääsu ressurssidele, kui see kasutaja on end autentinud.
+
+Pärast neid on võimalik ka teha ise mingeid Custom middlewaresid vastavalt vajadusele, kuid pärast seda on ENDPOINT.
+
+6. KUIDAS MÕJUTAB MIDDLEWARE KOODI JÄRJESTUS KOMPONENTIDE TÖÖD?
+Väga palju mõjutab. Vastavalt olukorrale on vajalik ka panna neid õigesse järjekorda, vastasel juhul ei tee programm seda, mida soovite.
+
+7. MIDA TEEB DEVELOPEREXCEPTIONNPAGEMIDDLEWARE, USEEXCEPTIONHANDLER, USEHSTS, USEHTTPSREDIRECTION, USESTATICFILE, USECOOKIEPOLICY, USEROUTING, USEAUTHENTICATION, USEAUTHORIZATION, USESESSION JA USEENDPOINTS KOOS MAPRAZORPAGES, USESPASTATICFILES?
+UseDeveloperExeptionPage - Teatab rakenduse käivitamise ajal tõrgetest.
+UseExceptionHandler - Püüab kinni kõik erandid, mis tekivad edaspidistes middlewaredes.
+UseHsts - On mingi transpordi turvalisus protokoll.
+UseHttpsRedirection - Annab edasi HTTP requeste HTTPS-ile.
+UseStaticFiles - Tagastab staatilised failid ja short-cicuit failid kaugemale, et need ei peaks läbima kõiki middlewaresid.
+UseCookiePolicy - Kontrollib programmi/äppi Euroopa GDPR regulatsioonidega.
+UseRouting - Suunab requeste edasi/tagasi.
+UseAuthorization - Annab õiguse kasutajal ligipääseda kaitstud ressurssidele.
+UseAuthentication - Autoriseerib kasutajat, enne kui antakse ligipääs kaitstud ressurssidele
+UseSession - Loob ja säilitab seansi oleku.
+UseEndPoints with MapRazorPages - Lisab Razor Pagesi lõpp punktid requesti pipelinei.
+UseSpaStaticFiles -Lubab kõikidel teistel Middlaware komponentidel requestidele ennem vastata. 
+
+8. VALIGE VÄLJA VIIS BUILT-IN MIDDLEWARE JA ISELOOMUSTAGE NEID.
+
+UseRouting - Põhiülesandeks on suunata requeste edasi või tagasi. Samal ajal lisab UseRouting teekonna, mis vastab middleware
+pipelinega. See vaatab endpointe, mis on välja toodud koodireas ning valib siis kõige sobivama endpoindi vastavalt requestile
+ning seejärel paneb selle teele. Samuti määrab see pipelines endpointe vastavalt requestile, et see ei läheks kuskile edasi, kuhu
+seei ei peaks minema.
+
+UseAuthorization ja UseAuthentication - Annab õiguse kasutajal ligipääseda kaitstud ressurssidele. Näiteks tahad sisse logida kusagile veebilehele,
+kuid ei õnnestu, sest sul tegelikkuses pole kasutajat. Nüüd tuleb mängu UseAuthentication, mis annab teada UseAuthorizationile, et see kasutaja pole
+autoriseeritud kasutaja ning suunab su siis tagasi log in ekraanile.
+
+UseHttpsRedirection - Sisuliselt kõik HTTP requestid, mis tulevad middleware pipelinesse, suunatakse automaatselt HTTPS aadressitele.
+Kui küsida, mis erinevus nendel on, siis üks on secure(HTTPS) teine pole.
+
+UseDeveloperExeptionPage - Kasutades seda meetodit tagab see seda, et kõik erandid jäävad kinni sellesse komponenti. Mitte miski ei saa läbi.
+Selle komponendi kõrval tasub ka kasutada UseDeveloperExceptionPage ja UseDatebaseErrorPage, mida kasutatakse arenduses, et tabada erandite liiklust.
+
+
